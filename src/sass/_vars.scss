@@ -1,0 +1,14 @@
+$noOpacity: 0;
+$defaultOpacity: 0.4;
+$fullOpacity: 1;
+$animationDuration: 200ms;
+$animationType: linear;
+
+$transparentWhite: rgba(255,255,255,$defaultOpacity);
+$transparentBlack: rgba(0,0,0,$defaultOpacity);
+
+$seekerHeight: 4px;
+$seekerCurrentPositionMarkerSize:12px;
+
+$fontSize:11px;
+$fontColor:rgba(255,255,255,$fullOpacity);
