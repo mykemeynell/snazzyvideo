@@ -21,9 +21,6 @@ class VideoObject {
         this.markers = $.extend([], markers);
 
         this.wrapper = $(this.wrapperContainer());
-
-        this.currentTime = this.DomObject[0].currentTime;
-        this.duration = this.OriginalDomObject[0].duration;
     }
 
     debug() {
@@ -34,6 +31,9 @@ class VideoObject {
         this.DomObject.removeAttr('controls');
         this.DomObject.removeAttr('autoplay');
         this.DomObject.removeAttr('loop');
+
+        this.currentTime = this.DomObject[0].currentTime;
+        this.duration = this.DomObject[0].duration;
     }
 
     markerTemplate(label) {
@@ -92,23 +92,27 @@ class VideoObject {
     }
 
     addVideoElementIntoWrapper() {
-        this.wrapper.find('.snazzyvideo-element-wrapper').prepend(this.DomObject);
-        let wrapper = '.' + VideoObjectClasses.getRootContainerClass();
+        if(! this.DomObject.hasClass(VideoObjectClasses.getBaseClass())) {
+            this.DomObject.addClass(VideoObjectClasses.getBaseClass())
+        }
+
+        this.wrapper.find('.' + VideoObjectClasses.getElementWrapperClass()).prepend(this.DomObject);
         this.wrapper.addClass(VideoObjectClasses.getVideoPausedClass());
     }
 
     setTimestamps() {
-        if(this.config.debug) {
-            console.debug("Duration container", this.wrapper.find('.snazzyvideo-total-time > span'));
-            console.debug("Video duration", this.duration);
+        let duration = this.duration = this.DomObject[0].duration;
+        let currentTime = this.currentTime = this.DomObject[0].currentTime;
+
+        if(this.debug()) {
             console.debug("Current time container", this.wrapper.find('.snazzyvideo-total-time > span'));
-            console.debug("Video current time", this.currentTime);
+            console.debug("Video current time", currentTime);
         }
 
         // Update the length of the video in the wrapper
-        this.wrapper.find('.snazzyvideo-total-time > span').text(this.formatTime(this.duration));
+        this.wrapper.find('.snazzyvideo-total-time > span').text(this.formatTime(duration));
         // Update the length of the video in the wrapper
-        this.wrapper.find('.snazzyvideo-current-time > span').text(this.formatTime(this.currentTime));
+        this.wrapper.find('.snazzyvideo-current-time > span').text(this.formatTime(currentTime));
     }
 
     registerPlayPauseEvent() {
@@ -142,16 +146,21 @@ class VideoObject {
             this.wrapper.find('.snazzyvideo-current-time > span').text(this.formatTime(currentTime));
         };
 
+        let updateDurationTimeStamp = () => {
+            let duration = this.duration = this.DomObject[0].duration;
+            this.wrapper.find('.snazzyvideo-total-time > span').text(this.formatTime(duration));
+        };
+
         let updateSeekerPosition = () => {
             let currentTime = this.currentTime = this.DomObject[0].currentTime;
             let duration = this.DomObject[0].duration;
             let percentPlayed = ((currentTime / duration) * 100) + '%';
-
             this.wrapper.find('.snazzyvideo-seeker-current-position').css('left', percentPlayed);
         };
 
         this.DomObject.on('timeupdate', updateCurrentTimeStamp);
         this.DomObject.on('timeupdate', updateSeekerPosition);
+        this.DomObject.on('loadedmetadata', updateDurationTimeStamp);
     }
 
     checkAirPlaySupport() {
@@ -160,9 +169,15 @@ class VideoObject {
         let WebKitPlaybackTargetAvailabilityEvent = window.WebKitPlaybackTargetAvailabilityEvent;
 
         if(this.debug()) { console.info("Airplay support", WebKitPlaybackTargetAvailabilityEvent); }
+
         if (WebKitPlaybackTargetAvailabilityEvent) {
+            if(this.debug()) { console.info("AirPlay support detected"); }
+            // let _this = this;
+
             this.DomObject.on('webkitplaybacktargetavailabilitychanged', (event) => {
-                switch (event.availability) {
+                if(this.debug()) { console.info("AirPlay [webkitplaybacktargetavailabilitychanged] event", event); }
+
+                switch (event.originalEvent.availability) {
                     case "available":
                         this.wrapper.find('.snazzyvideo-airplay').css('display', 'flex');
                         break;
@@ -171,7 +186,28 @@ class VideoObject {
                         this.wrapper.find('.snazzyvideo-airplay').css('display', 'none');
                 }
             });
-        } else { this.wrapper.find('.snazzyvideo-airplay').css('display', 'none'); }
+        } else {
+            if(this.debug()) { console.error("AirPlay is not supported in this browser"); }
+            this.wrapper.find('.snazzyvideo-airplay').css('display', 'none');
+        }
+    }
+
+    registerAirPlayTargetPickerClickEvent() {
+        if (!window.WebKitPlaybackTargetAvailabilityEvent)
+            return;
+
+        if(this.debug()) { console.info("Registered click event for AirPlay target selector"); }
+
+        this.wrapper.find(VideoObjectClasses.getAirPlayTargetPickerClass()).on('click', (event) => {
+            event.preventDefault();
+            this.DomObject[0].webkitShowPlaybackTargetPicker();
+        });
+    }
+
+    registerSeekerTrackClick() {
+        this.wrapper.find('.' + VideoObjectClasses.getSeekerTrackClass()).on('click', event => {
+            if(this.debug()) { console.info("Seeker track click event fired", event); }
+        });
     }
 
     renderObject() {
@@ -182,6 +218,9 @@ class VideoObject {
         this.registerPlayPauseEvent();
         this.registerTimeChangeEvent();
         this.checkAirPlaySupport();
+        this.registerAirPlayTargetPickerClickEvent();
+
+        this.registerSeekerTrackClick()
 
 
         this.OriginalDomObject.replaceWith(this.wrapper);
@@ -192,5 +231,12 @@ class VideoObjectClasses {
     static getPlayButtonClass() { return 'snazzyvideo-play'; }
     static getPauseButtonClass() { return 'snazzyvideo-pause'; }
     static getVideoPausedClass() { return 'video-is-paused'; }
+
+    static getAirPlayTargetPickerClass() { return '.snazzyvideo-airplay'; }
+
+    static getSeekerTrackClass() { return 'snazzyvideo-seeker-track'; }
+
     static getRootContainerClass() { return 'snazzyvideo-container'; }
+    static getElementWrapperClass() { return 'snazzyvideo-element-wrapper'; }
+    static getBaseClass() { return 'snazzyvideo'; }
 }
