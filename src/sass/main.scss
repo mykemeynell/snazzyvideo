@@ -2,7 +2,7 @@
 @import "mixins.scss";
 
 video {
-  &.snazzyvideo {max-width:100%;}
+  &.snazzyvideo {width:100%;}
   &::-webkit-media-controls-overlay-play-button {display: none;-webkit-appearance: none;}
 }
 
@@ -28,12 +28,22 @@ video {
     .snazzyvideo-seeker {display:flex;flex-direction:column;flex-grow: 1;margin:0 10px;
       .snazzyvideo-seeker-track {background:rgba(255,255,255,$defaultOpacity);height:$seekerHeight;@include border-radius(4px);margin:auto 0;position:relative;cursor:pointer;}
       .snazzyvideo-seeker-position, .snazzyvideo-seeker-marker {background:rgba(255,255,255,$fullOpacity);width:1px;height:$seekerHeight;display:inline;position:absolute;top:0;left:0;}
-      .snazzyvideo-seeker-position.snazzyvideo-seeker-position-in-past {background:rgba(0,0,0,$fullOpacity);}
+      .snazzyvideo-seeker-position {display:none;
+        &.snazzyvideo-seeker-position-in-past {background:rgba(0,0,0,$fullOpacity);}
+        &.snazzyvideo-seeker-position-active {display:inline;
+          .snazzyvideo-seeker-position-label span {display:inline-block;}
+        }
+        .snazzyvideo-seeker-position-label {position:relative;width:0px;height:0px;
+          span {position:absolute;color:$fontColor;font-size:$fontSize;display:none;top:calc(100% - 22px);transform:translate(-50%);}
+        }
+      }
       .snazzyvideo-seeker-current-position {background:rgba(255,255,255,$fullOpacity);height:$seekerCurrentPositionMarkerSize;width:$seekerCurrentPositionMarkerSize;top:50%;left:-($seekerCurrentPositionMarkerSize/2);transform:translateY(-50%);position:absolute;@include border-radius(50%);}
       .snazzyvideo-seeker-marker {
-        &.snazzyvideo-seeker-marker-hovered {width:$seekerHeight;@include border-radius($seekerHeight);}
-        .snazzyvideo-seeker-marker-label {position:relative;width:0px;height:0px;
-          span {position:absolute;color:$fontColor;font-size:$fontSize;display:inline-block;top:calc(100% - 22px);transform:translate(-50%);}
+        &:hover {width:$seekerHeight;@include border-radius($seekerHeight);margin-left:-($seekerHeight/2);
+          .snazzyvideo-seeker-marker-label {display:inline;}
+        }
+        .snazzyvideo-seeker-marker-label {position:relative;width:0px;height:0px;display:none;
+          span {position:absolute;color:$fontColor;font-size:$fontSize;display:inline-block;top:calc(100% - 36px);transform:translate(-50%);}
         }
       }
     }
