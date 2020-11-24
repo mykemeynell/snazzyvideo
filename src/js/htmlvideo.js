@@ -93,6 +93,8 @@ class VideoObject {
 
     addVideoElementIntoWrapper() {
         this.wrapper.find('.snazzyvideo-element-wrapper').prepend(this.DomObject);
+        let wrapper = '.' + VideoObjectClasses.getRootContainerClass();
+        this.wrapper.addClass(VideoObjectClasses.getVideoPausedClass());
     }
 
     setTimestamps() {
@@ -121,6 +123,7 @@ class VideoObject {
                 if(this.debug()) { console.info("Play event fired", this.DomObject); }
                 this.DomObject[0].play();
                 target.removeClass(VideoObjectClasses.getPlayButtonClass()).addClass(VideoObjectClasses.getPauseButtonClass());
+                this.wrapper.removeClass(VideoObjectClasses.getVideoPausedClass());
                 return true;
             }
 
@@ -188,4 +191,6 @@ class VideoObject {
 class VideoObjectClasses {
     static getPlayButtonClass() { return 'snazzyvideo-play'; }
     static getPauseButtonClass() { return 'snazzyvideo-pause'; }
+    static getVideoPausedClass() { return 'video-is-paused'; }
+    static getRootContainerClass() { return 'snazzyvideo-container'; }
 }

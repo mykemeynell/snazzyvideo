@@ -38,10 +38,15 @@ video {
       }
     }
   }
-  .snazzyvideo-element-wrapper {margin-bottom:-6px;
-    .snazzyvideo-element-overlay {position:absolute;top:0;left:0;height:100%;width:100%;background: linear-gradient($transparentWhite, $transparentBlack);}
-    &:hover {
+  &.video-is-paused, &:hover {
+    .snazzyvideo-element-wrapper .snazzyvideo-element-overlay {@include transition(opacity $animationType $animationDuration); opacity: $fullOpacity;
       .snazzyvideo-button {transform:translate(-50%, -50%);opacity: $defaultOpacity;}
+    }
+  }
+  .snazzyvideo-element-wrapper {margin-bottom:-6px;
+    .snazzyvideo-element-overlay {@include transition(opacity $animationType $animationDuration);position:absolute;opacity:$noOpacity;top:0;left:0;height:100%;width:100%;background: linear-gradient($transparentWhite, $transparentBlack);}
+    &:hover {
+      .snazzyvideo-button {transform:translate(-50%, -50%);opacity: $fullOpacity;}
     }
   }
   .snazzyvideo-button {width:86px;height:86px;position:absolute;top:50%;left:50%;transform: translate(-50%, -40%); appearance: none;background-color:transparent;border:none;opacity:0;@include transition(all $animationType $animationDuration);
