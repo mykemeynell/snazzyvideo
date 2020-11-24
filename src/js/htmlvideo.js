@@ -204,10 +204,38 @@ class VideoObject {
         });
     }
 
-    registerSeekerTrackClick() {
-        this.wrapper.find('.' + VideoObjectClasses.getSeekerTrackClass()).on('click', event => {
-            if(this.debug()) { console.info("Seeker track click event fired", event); }
-        });
+    registerSeekEvent() {
+        let seekerTrack = this.wrapper.find('.' + VideoObjectClasses.getSeekerTrackClass());
+        let seekerPosition = this.wrapper.find('.' + VideoObjectClasses.getSeekerPositionClass());
+        let seekerCurrentPositionMarker = this.wrapper.find('.' + VideoObjectClasses.getSeekerCurrentPositionMaker());
+
+        seekerTrack.on('mouseleave', function (event) { hidePotentialTracker(); });
+        seekerTrack.on('mousemove', function (event) { updatePotentialTracker(event.pageX); });
+        seekerTrack.on('click', function (event) { updateTracker(event.pageX); });
+
+        let hidePotentialTracker = () => { seekerPosition.css('left', '-5px'); };
+
+        let updatePotentialTracker = (pageX) => {
+            let position = pageX - seekerTrack.offset().left;
+            let percentage = 100 * position / seekerTrack.width();
+
+            if(percentage > 100) { percentage = 100; }
+            if(percentage < 0) {  percentage = 0; }
+
+            seekerPosition.css('left', percentage + '%');
+        };
+
+        let updateTracker = (pageX) => {
+            let position = pageX - seekerTrack.offset().left - (seekerCurrentPositionMarker.width() / 2); // Position that has been clicked.
+            let percentage = 100 * position / seekerTrack.width();
+
+            // Make sure that the seek position that has been clicked is within range.
+            if(percentage > 100) { percentage = 100; }
+            if(percentage < 0) {  percentage = 0; }
+
+            seekerCurrentPositionMarker.css('left', percentage + '%');
+            this.DomObject[0].currentTime = this.duration * percentage / 100;
+        };
     }
 
     renderObject() {
@@ -220,8 +248,7 @@ class VideoObject {
         this.checkAirPlaySupport();
         this.registerAirPlayTargetPickerClickEvent();
 
-        this.registerSeekerTrackClick()
-
+        this.registerSeekEvent()
 
         this.OriginalDomObject.replaceWith(this.wrapper);
     }
@@ -234,7 +261,9 @@ class VideoObjectClasses {
 
     static getAirPlayTargetPickerClass() { return '.snazzyvideo-airplay'; }
 
+    static getSeekerPositionClass() { return 'snazzyvideo-seeker-position'; }
     static getSeekerTrackClass() { return 'snazzyvideo-seeker-track'; }
+    static getSeekerCurrentPositionMaker() { return 'snazzyvideo-seeker-current-position'; }
 
     static getRootContainerClass() { return 'snazzyvideo-container'; }
     static getElementWrapperClass() { return 'snazzyvideo-element-wrapper'; }
